@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Utility - Contact Manager & Express Messenger</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --wa-dark-green: #075E54;
+      --wa-teal: #128C7E;
+      --wa-bright: #25D366;
+      --wa-light-green: #DCF8C6;
+      --wa-bg: #ECE5DD;
+
+      --bg-dark: #0f172a;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+
+      --primary: var(--wa-teal);
+      --primary-hover: #0d6e63;
+      --accent: var(--wa-bright);
+
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --warning: #f59e0b;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: #f1f5f9;
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1050px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Header Styling */
+    .header-card {
+      background: linear-gradient(135deg, var(--wa-dark-green) 0%, var(--wa-teal) 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 1.75rem 2rem;
+      box-shadow: 0 10px 25px -5px rgba(18, 140, 126, 0.25);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header-title h1 {
+      font-size: 1.65rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      letter-spacing: -0.02em;
+    }
+
+    .header-title p {
+      font-size: 0.875rem;
+      opacity: 0.85;
+      margin-top: 0.25rem;
+    }
+
+    .header-badges {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #ef4444;
+    }
+
+    .status-dot.connected {
+      background-color: var(--wa-bright);
+      box-shadow: 0 0 8px var(--wa-bright);
+    }
+
+    .status-dot.offline {
+      background-color: #94a3b8;
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .alert-success {
+      background-color: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .alert-error {
+      background-color: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .alert-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: inherit;
+      opacity: 0.7;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+      padding: 1.5rem 1.75rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* ===== QR PANEL STYLES ===== */
+    .qr-panel {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border-radius: 16px;
+      padding: 2rem;
+      color: white;
+      text-align: center;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .qr-panel::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 70%, rgba(37, 211, 102, 0.06) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .qr-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .qr-panel-header h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .qr-panel-sub {
+      font-size: 0.875rem;
+      color: #94a3b8;
+      margin-bottom: 1.5rem;
+    }
+
+    .qr-image-wrapper {
+      display: inline-block;
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 0 30px rgba(37, 211, 102, 0.15);
+      position: relative;
+    }
+
+    .qr-image-wrapper img {
+      width: 250px;
+      height: 250px;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .qr-status-text {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .qr-status-text.success {
+      color: var(--wa-bright);
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .qr-status-text.error {
+      color: #f87171;
+    }
+
+    .qr-spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-top-color: var(--wa-bright);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+
+    .qr-close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+
+    .qr-close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Link WhatsApp Button (in header) */
+    .btn-link-wa {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: var(--wa-bright);
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-link-wa:hover {
+      background: #1ebe57;
+      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-logout-wa {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-logout-wa:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    /* Connected checkmark animation */
+    @keyframes checkPop {
+      0% {
+        transform: scale(0);
+        opacity: 0;
+      }
+
+      60% {
+        transform: scale(1.2);
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .check-icon {
+      animation: checkPop 0.4s ease-out;
+    }
+
+    /* Pulse animation for scanning state */
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Form Layout */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 1rem;
+      align-items: end;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      border: 1.5px solid #cbd5e1;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+      background-color: #f8fafc;
+    }
+
+    .form-input:focus {
+      border-color: var(--wa-teal);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(18, 140, 126, 0.15);
+    }
+
+    .form-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background-color: var(--wa-teal);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+      box-shadow: 0 4px 12px rgba(18, 140, 126, 0.3);
+    }
+
+    .btn-secondary {
+      background-color: #e2e8f0;
+      color: var(--text-main);
+    }
+
+    .btn-secondary:hover {
+      background-color: #cbd5e1;
+    }
+
+    .btn-whatsapp {
+      background-color: var(--wa-bright);
+      color: white;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.825rem;
+      border-radius: 8px;
+    }
+
+    .btn-whatsapp:hover:not(:disabled) {
+      background-color: #1eb956;
+      box-shadow: 0 4px 10px rgba(37, 211, 102, 0.35);
+    }
+
+    .btn-whatsapp:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .btn-icon {
+      padding: 0.5rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+
+    .btn-edit {
+      background-color: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .btn-edit:hover {
+      background-color: #bae6fd;
+    }
+
+    .btn-delete {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .btn-delete:hover {
+      background-color: #fecaca;
+    }
+
+    /* Search & Filter Controls */
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .search-box input {
+      padding-left: 2.4rem;
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .sort-box {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sort-box select {
+      padding: 0.7rem 1rem;
+      border-radius: 10px;
+      border: 1.5px solid #cbd5e1;
+      font-size: 0.875rem;
+      outline: none;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    /* Table Styling */
+    .table-responsive {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .table th {
+      background-color: #f8fafc;
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.775rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .table td {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #f1f5f9;
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+
+    .table tbody tr {
+      transition: background-color 0.15s ease;
+    }
+
+    .table tbody tr:hover {
+      background-color: #f8fafc;
+    }
+
+    .table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Contact Details */
+    .contact-name {
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .contact-phone {
+      font-family: monospace;
+      color: #334155;
+      font-weight: 500;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+
+    .status-idle {
+      background-color: #f1f5f9;
+      color: var(--text-muted);
+    }
+
+    .status-sent {
+      background-color: #dcfce7;
+      color: #15803d;
+    }
+
+    .status-failed {
+      background-color: #ffe4e6;
+      color: #9f1239;
+    }
+
+    .timestamp {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .actions-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state svg {
+      color: #cbd5e1;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Spinner */
+    .spinner {
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ===== HEADER LOADING STATE ===== */
+    .header-loading {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.45rem 1rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .header-loading-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2.5px solid rgba(255, 255, 255, 0.25);
+      border-top-color: var(--wa-bright);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .header-loading-text {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .header-loading-dots {
+      display: inline-flex;
+      gap: 3px;
+      margin-left: 2px;
+    }
+
+    .header-loading-dots span {
+      width: 4px;
+      height: 4px;
+      background: var(--wa-bright);
+      border-radius: 50%;
+      animation: dotBounce 1.4s ease-in-out infinite;
+    }
+
+    .header-loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .header-loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dotBounce {
+      0%, 80%, 100% { transform: scale(0.4); opacity: 0.3; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    .header-badges-content {
+      display: none;
+    }
+
+    .header-badges-content.visible {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    /* Toast Container */
+    #toast-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .toast {
+      background: var(--bg-dark);
+      color: white;
+      padding: 0.85rem 1.25rem;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      animation: fadeIn 0.25s ease-out;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header-card">
+      <div class="header-title">
+        <h1>
+          <!-- WhatsApp Icon -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+            </path>
+          </svg>
+          WhatsApp Utility
+        </h1>
+        <p>Manage contacts and send instant customizable WhatsApp messages</p>
+      </div>
+
+      <div class="header-badges">
+        <!-- Inline Loading Indicator (shown while checking status) -->
+        <div class="header-loading" id="header-loading">
+          <div class="header-loading-spinner"></div>
+          <span class="header-loading-text">Connecting
+            <span class="header-loading-dots"><span></span><span></span><span></span></span>
+          </span>
+        </div>
+
+        <!-- Actual badges (hidden until status check completes) -->
+        <div class="header-badges-content" id="header-badges-content">
+        <div class="badge" id="wa-status-badge">
+          <span class="status-dot <%= isConnected ? 'connected' : '' %>" id="wa-status-dot"></span>
+          <span id="wa-status-label">
+            <%= isConnected ? 'WhatsApp Connected' : 'Disconnected' %>
+          </span>
+        </div>
+        <div class="badge">
+          Contacts: <%= totalCount %>
+        </div>
+        <a href="/templates" class="badge" style="text-decoration:none; cursor:pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+          ✉️ Templates
+        </a>
+
+        <% if (isConnected) { %>
+          <form action="/whatsapp/logout" method="POST" style="margin:0; display: inline-block;" id="logout-form"
+            onsubmit="if(confirm('Disconnect WhatsApp session? You will need to scan QR again.')){localStorage.removeItem('wa_connected_once');return true;}return false;">
+            <button type="submit" class="btn-logout-wa">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              Disconnect
+            </button>
+          </form>
+          <button class="btn-link-wa" id="btn-link-whatsapp" style="display: none;" onclick="showQRPanel()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+              <polyline points="10 17 15 12 10 7" />
+              <line x1="15" y1="12" x2="3" y2="12" />
+            </svg>
+            Link WhatsApp
+          </button>
+          <% } else { %>
+            <form action="/whatsapp/logout" method="POST" style="margin:0; display: none;" id="logout-form"
+              onsubmit="if(confirm('Disconnect WhatsApp session? You will need to scan QR again.')){localStorage.removeItem('wa_connected_once');return true;}return false;">
+              <button type="submit" class="btn-logout-wa">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Disconnect
+              </button>
+            </form>
+            <button class="btn-link-wa" id="btn-link-whatsapp" style="display: inline-flex;" onclick="showQRPanel()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                <polyline points="10 17 15 12 10 7" />
+                <line x1="15" y1="12" x2="3" y2="12" />
+              </svg>
+              Link WhatsApp
+            </button>
+            <% } %>
+        </div><!-- /.header-badges-content -->
+      </div>
+    </div>
+
+    <!-- Alert Notifications -->
+    <% if (alert.success) { %>
+      <div class="alert alert-success" id="alert-banner">
+        <span>✅ <%= alert.success %></span>
+        <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+      </div>
+      <% } %>
+
+        <% if (alert.error) { %>
+          <div class="alert alert-error" id="alert-banner">
+            <span>⚠️ <%= alert.error %></span>
+            <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+          </div>
+          <% } %>
+
+            <!-- QR Code Panel (hidden by default, shown when "Link WhatsApp" is clicked) -->
+            <div class="qr-panel" id="qr-panel" style="display: none;">
+              <button class="qr-close-btn" onclick="hideQRPanel()" title="Close">✕</button>
+
+              <div class="qr-panel-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                  <rect x="14" y="14" width="3" height="3" />
+                  <line x1="21" y1="14" x2="21" y2="14.01" />
+                  <line x1="21" y1="21" x2="21" y2="21.01" />
+                </svg>
+                <h2>Link Your WhatsApp</h2>
+              </div>
+              <p class="qr-panel-sub">Open WhatsApp on your phone → Settings → Linked Devices → Link a Device</p>
+
+              <div id="qr-content">
+                <!-- Dynamic content injected by JS -->
+                <div class="qr-status-text">
+                  <span class="qr-spinner"></span>
+                  Connecting to WhatsApp service...
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact Form (Add or Edit) -->
+            <div class="card">
+              <h2 class="card-title">
+                <% if (editContact) { %>
+                  ✏️ Edit Contact
+                  <% } else { %>
+                    ➕ Add New Contact
+                    <% } %>
+              </h2>
+
+              <form action="<%= editContact ? '/update/' + editContact._id : '/add' %>" method="POST">
+                <div class="form-grid">
+
+                  <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" class="form-input" placeholder="e.g. John Doe"
+                      value="<%= editContact ? editContact.name : '' %>" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="phone">WhatsApp Number *</label>
+                    <input type="text" id="phone" name="phone" class="form-input"
+                      placeholder="e.g. 9876543210 or 919876543210" value="<%= editContact ? editContact.phone : '' %>"
+                      required>
+                    <span class="form-hint">10 digits (auto-converts to 91XXXXXXXXXX) or 12 digits with 91</span>
+                  </div>
+
+                  <div style="display: flex; gap: 0.5rem;">
+                    <button type="submit" class="btn btn-primary">
+                      <% if (editContact) { %>
+                        Update Contact
+                        <% } else { %>
+                          Save Contact
+                          <% } %>
+                    </button>
+
+                    <% if (editContact) { %>
+                      <a href="/" class="btn btn-secondary">Cancel</a>
+                      <% } %>
+                  </div>
+
+                </div>
+              </form>
+            </div>
+
+            <!-- Contacts Table Card -->
+            <div class="card">
+
+              <div class="controls-row">
+                <h2 class="card-title" style="margin-bottom: 0;">
+                  📋 Contact List (<%= contacts.length %>)
+                </h2>
+
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                  <!-- Search Box -->
+                  <div class="search-box">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="searchInput" class="form-input" placeholder="Search name or phone..."
+                      value="<%= searchQuery %>" onkeyup="handleSearch()">
+                  </div>
+
+                  <!-- Sort Select -->
+                  <div class="sort-box">
+                    <select id="sortSelect" onchange="handleSort(this.value)">
+                      <option value="name_asc" <%=sortBy==='name_asc' ? 'selected' : '' %>>Sort: Name (A-Z)</option>
+                      <option value="name_desc" <%=sortBy==='name_desc' ? 'selected' : '' %>>Sort: Name (Z-A)</option>
+                      <option value="newest" <%=sortBy==='newest' ? 'selected' : '' %>>Sort: Newest First</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table" id="contactsTable">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>WhatsApp Phone</th>
+                      <th>Status</th>
+                      <th>Last Sent</th>
+                      <th style="text-align: right;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (contacts && contacts.length> 0) { %>
+                      <% contacts.forEach(contact=> { %>
+                        <tr data-name="<%= contact.name.toLowerCase() %>" data-phone="<%= contact.phone %>" data-id="<%= contact._id %>">
+
+                          <td>
+                            <div class="contact-name">
+                              <%= contact.name %>
+                            </div>
+                          </td>
+
+                          <td>
+                            <span class="contact-phone">+<%= contact.phone %></span>
+                          </td>
+
+                          <td>
+                            <span class="status-badge status-<%= contact.status || 'idle' %>">
+                              <%= contact.status || 'idle' %>
+                            </span>
+                          </td>
+
+                          <td>
+                            <span class="timestamp" id="time-<%= contact._id %>">
+                              <%= contact.lastSent ? new Date(contact.lastSent).toLocaleString() : 'Never' %>
+                            </span>
+                          </td>
+
+                          <td>
+                            <div class="actions-cell" style="justify-content: flex-end;">
+
+                              <!-- WhatsApp Send Button -->
+                              <button class="btn btn-whatsapp wa-send-btn"
+                                onclick="sendWhatsAppMessage('<%= contact._id %>', '<%= contact.name %>', this)">
+                                <!-- WhatsApp SVG Icon -->
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                                  <path
+                                    d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+                                </svg>
+
+                                <!-- Spinner SVG -->
+                                <svg class="spinner" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                  stroke="currentColor" stroke-width="3">
+                                  <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"></circle>
+                                </svg>
+
+                                <span class="btn-text">Send</span>
+                              </button>
+
+                              <!-- Edit Button -->
+                              <a href="/edit/<%= contact._id %>" class="btn btn-icon btn-edit" title="Edit Contact">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                  stroke-width="2">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                              </a>
+
+                              <!-- Delete Button -->
+                              <button class="btn btn-icon btn-delete" title="Delete Contact"
+                                onclick="confirmDelete('<%= contact._id %>', '<%= contact.name %>')">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                  stroke-width="2">
+                                  <polyline points="3 6 5 6 21 6"></polyline>
+                                  <path
+                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                  </path>
+                                </svg>
+                              </button>
+
+                            </div>
+                          </td>
+
+                        </tr>
+                        <% }); %>
+                          <% } else { %>
+                            <tr id="emptyRow">
+                              <td colspan="5">
+                                <div class="empty-state">
+                                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <line x1="23" y1="11" x2="17" y2="11"></line>
+                                  </svg>
+                                  <p style="font-weight: 600; font-size: 1rem;">No contacts saved yet</p>
+                                  <p style="font-size: 0.85rem; margin-top: 0.2rem;">Add a contact above to start
+                                    sending WhatsApp messages.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <% } %>
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+
+            <!-- Active Message Template Preview -->
+            <div class="card" style="border-left: 4px solid var(--wa-bright);">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                <h2 class="card-title" style="margin-bottom: 0;">
+                  ✉️ Active Message Template
+                </h2>
+                <a href="/templates" class="btn btn-primary" style="font-size: 0.825rem; padding: 0.5rem 1rem;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  Manage Templates
+                </a>
+              </div>
+              <% if (defaultTemplate) { %>
+                <div style="margin-top: 1rem; padding: 1.25rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <span style="background: #dcfce7; color: #15803d; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 9999px; text-transform: uppercase;">Default</span>
+                    <span style="font-weight: 600; color: var(--text-main);"><%= defaultTemplate.name %></span>
+                  </div>
+                  <pre style="white-space: pre-wrap; word-wrap: break-word; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; margin: 0;"><%= defaultTemplate.body %></pre>
+                  <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <span style="background: #e0f2fe; color: #0369a1; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 6px;">{{name}}</span>
+                    <span style="background: #e0f2fe; color: #0369a1; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 6px;">{{phone}}</span>
+                    <span style="background: #e0f2fe; color: #0369a1; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.5rem; border-radius: 6px;">{{dueDate}}</span>
+                    <span style="font-size: 0.7rem; color: var(--text-muted); align-self: center;">← placeholders auto-replaced when sending</span>
+                  </div>
+                </div>
+              <% } else { %>
+                <div style="margin-top: 1rem; text-align: center; padding: 2rem; color: var(--text-muted);">
+                  <p style="font-weight: 600;">No default template set</p>
+                  <p style="font-size: 0.85rem; margin-top: 0.3rem;">Go to <a href="/templates" style="color: var(--wa-teal); font-weight: 600;">Templates</a> to create one.</p>
+                </div>
+              <% } %>
+            </div>
+
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <script>
+    // ===== QR Panel Logic =====
+    let qrPollInterval = null;
+    let isQRPanelVisible = false;
+
+    function showQRPanel() {
+      const panel = document.getElementById('qr-panel');
+      panel.style.display = 'block';
+      panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      isQRPanelVisible = true;
+      pollQRStatus(); // fetch immediately
+      qrPollInterval = setInterval(pollQRStatus, 3000); // poll every 3 seconds
+    }
+
+    function hideQRPanel() {
+      const panel = document.getElementById('qr-panel');
+      panel.style.display = 'none';
+      isQRPanelVisible = false;
+      if (qrPollInterval) {
+        clearInterval(qrPollInterval);
+        qrPollInterval = null;
+      }
+    }
+
+    async function pollQRStatus() {
+      const contentEl = document.getElementById('qr-content');
+
+      try {
+        const res = await fetch('/whatsapp/qr-status');
+        const data = await res.json();
+
+        if (data.connected) {
+          // Successfully connected!
+          contentEl.innerHTML = `
+            <div style="padding: 2rem 0;">
+              <svg class="check-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#25D366" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              <p class="qr-status-text success" style="margin-top: 1rem;">✅ WhatsApp Connected Successfully!</p>
+              <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem;">Session saved. Reloading dashboard...</p>
+            </div>
+          `;
+
+          // Update header status immediately
+          updateHeaderStatus(true);
+
+          // Stop polling and reload after a brief delay
+          if (qrPollInterval) {
+            clearInterval(qrPollInterval);
+            qrPollInterval = null;
+          }
+          setTimeout(() => window.location.reload(), 2000);
+
+        } else if (!data.serviceOnline) {
+          // Go service is not running
+          contentEl.innerHTML = `
+            <div style="padding: 1.5rem 0;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+              <p class="qr-status-text error" style="margin-top: 1rem;">WhatsApp service is not running</p>
+              <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem; max-width: 400px; margin-inline: auto;">
+                Start the Go service first:<br>
+                <code style="background: rgba(255,255,255,0.1); padding: 0.3rem 0.6rem; border-radius: 6px; margin-top: 0.5rem; display: inline-block; font-size: 0.85rem;">
+                  cd whatsapp-service && go run main.go
+                </code>
+              </p>
+            </div>
+          `;
+
+        } else if (data.qr && data.qr.length > 10) {
+          // QR code available — show it
+          contentEl.innerHTML = `
+            <div class="qr-image-wrapper">
+              <img src="${data.qr}" alt="WhatsApp QR Code" />
+            </div>
+            <p class="qr-status-text pulse">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              Waiting for you to scan...
+            </p>
+          `;
+
+        } else {
+          // Service online but no QR yet (generating or expired)
+          contentEl.innerHTML = `
+            <div style="padding: 1.5rem 0;">
+              <span class="qr-spinner" style="width: 32px; height: 32px; border-width: 4px;"></span>
+              <p class="qr-status-text" style="margin-top: 1rem;">Generating QR code...</p>
+              <p style="color: #64748b; font-size: 0.8rem; margin-top: 0.4rem;">This may take a few seconds</p>
+            </div>
+          `;
+        }
+      } catch (err) {
+        contentEl.innerHTML = `
+          <div style="padding: 1.5rem 0;">
+            <p class="qr-status-text error">Failed to reach the server</p>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem;">Make sure both the Node.js and Go services are running.</p>
+          </div>
+        `;
+      }
+    }
+
+    function updateHeaderStatus(connected, serviceOnline = true) {
+      const dot = document.getElementById('wa-status-dot');
+      const label = document.getElementById('wa-status-label');
+      const logoutForm = document.getElementById('logout-form');
+      const linkBtn = document.getElementById('btn-link-whatsapp');
+
+      if (!serviceOnline) {
+        if (dot) dot.className = 'status-dot offline';
+        if (label) label.textContent = 'Service Offline';
+        if (logoutForm) logoutForm.style.display = 'none';
+        if (linkBtn) linkBtn.style.display = 'inline-flex';
+        document.querySelectorAll('.wa-send-btn').forEach(btn => btn.disabled = true);
+        return;
+      }
+
+      if (dot) dot.className = connected ? 'status-dot connected' : 'status-dot';
+      if (label) label.textContent = connected ? 'WhatsApp Connected' : 'Disconnected';
+      if (logoutForm) logoutForm.style.display = connected ? 'inline-block' : 'none';
+      if (linkBtn) linkBtn.style.display = connected ? 'none' : 'inline-flex';
+      document.querySelectorAll('.wa-send-btn').forEach(btn => btn.disabled = !connected);
+    }
+
+    async function syncWhatsAppStatus() {
+      try {
+        const res = await fetch('/whatsapp/qr-status');
+        const data = await res.json();
+        updateHeaderStatus(data.connected, data.serviceOnline !== false);
+      } catch (e) {
+        updateHeaderStatus(false, false);
+      }
+    }
+
+    // ===== Header Loading Logic =====
+    const WA_CONNECTED_KEY = 'wa_connected_once';
+
+    async function initialStatusCheck() {
+      const loadingEl = document.getElementById('header-loading');
+      const badgesEl = document.getElementById('header-badges-content');
+      const alreadyConnected = localStorage.getItem(WA_CONNECTED_KEY) === 'true';
+
+      // If previously connected, skip loading and show badges immediately
+      if (alreadyConnected) {
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (badgesEl) badgesEl.classList.add('visible');
+      }
+
+      try {
+        const res = await fetch('/whatsapp/qr-status');
+        const data = await res.json();
+        updateHeaderStatus(data.connected, data.serviceOnline !== false);
+
+        // Remember successful connection
+        if (data.connected) {
+          localStorage.setItem(WA_CONNECTED_KEY, 'true');
+        }
+      } catch (e) {
+        updateHeaderStatus(false, false);
+      }
+
+      // Swap loading indicator for actual badges (only if not already shown)
+      if (!alreadyConnected) {
+        setTimeout(() => {
+          if (loadingEl) loadingEl.style.display = 'none';
+          if (badgesEl) badgesEl.classList.add('visible');
+        }, 400);
+      }
+    }
+
+    // Run the initial status check
+    initialStatusCheck();
+
+    // Continue polling every 4 seconds after initial check
+    setInterval(syncWhatsAppStatus, 4000);
+
+    // ===== Original Dashboard Logic =====
+
+    // Real-time Client-Side Search
+    function handleSearch() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const rows = document.querySelectorAll('#contactsTable tbody tr:not(#emptyRow)');
+      let visibleCount = 0;
+
+      rows.forEach(row => {
+        const name = row.getAttribute('data-name');
+        const phone = row.getAttribute('data-phone');
+
+        if (name.includes(query) || phone.includes(query)) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    // Sort Handler via URL Redirect
+    function handleSort(sortValue) {
+      const search = document.getElementById('searchInput').value;
+      let url = '/?sort=' + sortValue;
+      if (search) {
+        url += '&search=' + encodeURIComponent(search);
+      }
+      window.location.href = url;
+    }
+
+    // Confirmation Modal before Delete
+    function confirmDelete(id, name) {
+      if (confirm(`Are you sure you want to delete contact "${name}"?`)) {
+        window.location.href = '/delete/' + id;
+      }
+    }
+
+    // Send WhatsApp Message with Loading Spinner & Toast
+    async function sendWhatsAppMessage(id, name, buttonElement) {
+      const icon = buttonElement.querySelector('svg:not(.spinner)');
+      const spinner = buttonElement.querySelector('.spinner');
+      const text = buttonElement.querySelector('.btn-text');
+
+      // Set Loading state
+      buttonElement.disabled = true;
+      if (icon) icon.style.display = 'none';
+      if (spinner) spinner.style.display = 'inline-block';
+      if (text) text.innerText = 'Sending...';
+
+      try {
+        const response = await fetch('/send/' + id, {
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          showToast(`✅ Message sent automatically to ${name}!`);
+
+          // Update status badge dynamically
+          const row = buttonElement.closest('tr');
+          if (row) {
+            const statusBadge = row.querySelector('.status-badge');
+            if (statusBadge) {
+              statusBadge.className = 'status-badge status-sent';
+              statusBadge.innerText = 'sent';
+            }
+
+            const timeCell = row.querySelector('.timestamp');
+            if (timeCell && data.lastSent) {
+              timeCell.innerText = new Date(data.lastSent).toLocaleString();
+            }
+          }
+        } else {
+          showToast(`⚠️ ${data.error || 'Failed to send message'}`, true);
+        }
+      } catch (err) {
+        showToast(`⚠️ Request failed: ${err.message}`, true);
+      } finally {
+        // Restore button state
+        buttonElement.disabled = false;
+        if (icon) icon.style.display = 'inline-block';
+        if (spinner) spinner.style.display = 'none';
+        if (text) text.innerText = 'Send';
+      }
+    }
+
+    // Dynamic Toast Notification
+    function showToast(message, isError = false) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      if (isError) toast.style.background = '#991b1b';
+      toast.innerText = message;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
+</body>
+
+</html>

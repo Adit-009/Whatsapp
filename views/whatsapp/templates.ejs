@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Message Templates - WhatsApp Utility</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --wa-dark-green: #075E54;
+      --wa-teal: #128C7E;
+      --wa-bright: #25D366;
+      --wa-light-green: #DCF8C6;
+      --wa-bg: #ECE5DD;
+
+      --bg-dark: #0f172a;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+
+      --primary: var(--wa-teal);
+      --primary-hover: #0d6e63;
+      --accent: var(--wa-bright);
+
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --warning: #f59e0b;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: #f1f5f9;
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1050px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Header Styling */
+    .header-card {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 1.75rem 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header-title h1 {
+      font-size: 1.65rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      letter-spacing: -0.02em;
+    }
+
+    .header-title p {
+      font-size: 0.875rem;
+      opacity: 0.75;
+      margin-top: 0.25rem;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1.1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.22);
+      transform: translateY(-1px);
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .alert-success {
+      background-color: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .alert-error {
+      background-color: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .alert-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: inherit;
+      opacity: 0.7;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+      padding: 1.5rem 1.75rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Form Layout */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      border: 1.5px solid #cbd5e1;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+      background-color: #f8fafc;
+    }
+
+    .form-input:focus {
+      border-color: var(--wa-teal);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(18, 140, 126, 0.15);
+    }
+
+    .form-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    textarea.form-input {
+      min-height: 180px;
+      resize: vertical;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      line-height: 1.6;
+    }
+
+    /* Placeholder buttons */
+    .placeholder-buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+
+    .placeholder-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .placeholder-btn:hover {
+      background: #bae6fd;
+      transform: translateY(-1px);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background-color: var(--wa-teal);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+      box-shadow: 0 4px 12px rgba(18, 140, 126, 0.3);
+    }
+
+    .btn-secondary {
+      background-color: #e2e8f0;
+      color: var(--text-main);
+    }
+
+    .btn-secondary:hover {
+      background-color: #cbd5e1;
+    }
+
+    .btn-success {
+      background-color: var(--wa-bright);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: #1eb956;
+      box-shadow: 0 4px 10px rgba(37, 211, 102, 0.35);
+    }
+
+    .btn-danger-outline {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .btn-danger-outline:hover {
+      background-color: #fecaca;
+    }
+
+    .btn-sm {
+      padding: 0.45rem 0.85rem;
+      font-size: 0.8rem;
+      border-radius: 8px;
+    }
+
+    /* Templates Grid */
+    .templates-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .template-card {
+      background: #f8fafc;
+      border-radius: 14px;
+      border: 1.5px solid #e2e8f0;
+      padding: 1.25rem 1.5rem;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .template-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .template-card.is-default {
+      border-color: var(--wa-bright);
+      background: linear-gradient(135deg, #f0fdf4 0%, #f8fafc 100%);
+    }
+
+    .template-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .template-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .template-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-default {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .badge-custom {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .template-body {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      padding: 1rem;
+      background: white;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .template-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .template-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.75rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+    }
+
+    /* Live Preview */
+    .preview-card {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      color: white;
+      margin-top: 1rem;
+    }
+
+    .preview-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .preview-body {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: #e2e8f0;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .template-header {
+        flex-direction: column;
+      }
+      .template-actions {
+        flex-direction: column;
+      }
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header-card">
+      <div class="header-title">
+        <h1>
+          ✉️ Message Templates
+        </h1>
+        <p>Create and manage customizable message templates for WhatsApp</p>
+      </div>
+      <a href="/" class="btn-back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back to Dashboard
+      </a>
+    </div>
+
+    <!-- Alert Notifications -->
+    <% if (alert.success) { %>
+      <div class="alert alert-success">
+        <span>✅ <%= alert.success %></span>
+        <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+      </div>
+    <% } %>
+
+    <% if (alert.error) { %>
+      <div class="alert alert-error">
+        <span>⚠️ <%= alert.error %></span>
+        <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+      </div>
+    <% } %>
+
+    <!-- Create / Edit Template Form -->
+    <div class="card">
+      <h2 class="card-title">
+        <% if (editTemplate) { %>
+          ✏️ Edit Template
+        <% } else { %>
+          ➕ Create New Template
+        <% } %>
+      </h2>
+
+      <form action="<%= editTemplate ? '/templates/update/' + editTemplate._id : '/templates/add' %>" method="POST">
+        <div class="form-group">
+          <label for="name">Template Name *</label>
+          <input type="text" id="name" name="name" class="form-input"
+            placeholder="e.g. Fee Reminder, Birthday Greeting, Course Update..."
+            value="<%= editTemplate ? editTemplate.name : '' %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="body">Message Body *</label>
+          <div class="placeholder-buttons">
+            <span style="font-size: 0.78rem; color: var(--text-muted); align-self: center; margin-right: 0.25rem;">Insert:</span>
+            <button type="button" class="placeholder-btn" onclick="insertPlaceholder('{{name}}')">
+              👤 {{name}}
+            </button>
+            <button type="button" class="placeholder-btn" onclick="insertPlaceholder('{{phone}}')">
+              📞 {{phone}}
+            </button>
+            <button type="button" class="placeholder-btn" onclick="insertPlaceholder('{{dueDate}}')">
+              📅 {{dueDate}}
+            </button>
+          </div>
+          <textarea id="body" name="body" class="form-input"
+            placeholder="Type your message here. Use {{name}}, {{phone}}, and {{dueDate}} as placeholders..."
+            oninput="updatePreview()" required><%= editTemplate ? editTemplate.body : '' %></textarea>
+          <span class="form-hint">Use placeholders like <strong>{{name}}</strong>, <strong>{{phone}}</strong>, and <strong>{{dueDate}}</strong> — they'll be auto-replaced with real contact data when sending.</span>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="preview-card">
+          <div class="preview-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            Live Preview
+          </div>
+          <div class="preview-body" id="preview-body">
+            <span style="color: #64748b; font-style: italic;">Start typing to see preview...</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; margin-top: 1.25rem;">
+          <button type="submit" class="btn btn-primary">
+            <% if (editTemplate) { %>
+              Update Template
+            <% } else { %>
+              Create Template
+            <% } %>
+          </button>
+          <% if (editTemplate) { %>
+            <a href="/templates" class="btn btn-secondary">Cancel</a>
+          <% } %>
+        </div>
+      </form>
+    </div>
+
+    <!-- Templates List -->
+    <div class="card">
+      <h2 class="card-title" style="margin-bottom: 1rem;">
+        📋 All Templates (<%= templates.length %>)
+      </h2>
+
+      <% if (templates.length > 0) { %>
+        <div class="templates-list">
+          <% templates.forEach(template => { %>
+            <div class="template-card <%= template.isDefault ? 'is-default' : '' %>">
+              <div class="template-header">
+                <div class="template-name">
+                  <%= template.name %>
+                  <% if (template.isDefault) { %>
+                    <span class="template-badge badge-default">✓ Default</span>
+                  <% } else { %>
+                    <span class="template-badge badge-custom">Custom</span>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="template-body"><%= template.body %></div>
+
+              <div class="template-meta">
+                Created: <%= new Date(template.createdAt).toLocaleString() %>
+                <% if (template.updatedAt && template.updatedAt !== template.createdAt) { %>
+                  • Updated: <%= new Date(template.updatedAt).toLocaleString() %>
+                <% } %>
+              </div>
+
+              <div class="template-actions">
+                <% if (!template.isDefault) { %>
+                  <form action="/templates/default/<%= template._id %>" method="POST" style="margin:0;">
+                    <button type="submit" class="btn btn-success btn-sm" title="Set as default template for sending">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      Set as Default
+                    </button>
+                  </form>
+                <% } %>
+
+                <a href="/templates?edit=<%= template._id %>" class="btn btn-secondary btn-sm">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  Edit
+                </a>
+
+                <% if (!template.isDefault) { %>
+                  <button class="btn btn-danger-outline btn-sm"
+                    onclick="if(confirm('Delete template &quot;<%= template.name %>&quot;?')){window.location.href='/templates/delete/<%= template._id %>'}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Delete
+                  </button>
+                <% } %>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <p style="font-weight: 600; font-size: 1rem;">No templates yet</p>
+          <p style="font-size: 0.85rem; margin-top: 0.2rem;">Create your first message template above.</p>
+        </div>
+      <% } %>
+    </div>
+
+  </div>
+
+  <script>
+    /**
+     * Insert a placeholder at the cursor position in the body textarea.
+     */
+    function insertPlaceholder(placeholder) {
+      const textarea = document.getElementById('body');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const before = textarea.value.substring(0, start);
+      const after = textarea.value.substring(end);
+
+      textarea.value = before + placeholder + after;
+      textarea.focus();
+
+      // Move cursor after the inserted placeholder
+      const newPos = start + placeholder.length;
+      textarea.setSelectionRange(newPos, newPos);
+
+      updatePreview();
+    }
+
+    /**
+     * Update the live preview with sample data.
+     */
+    function updatePreview() {
+      const body = document.getElementById('body').value;
+      const previewEl = document.getElementById('preview-body');
+
+      if (!body.trim()) {
+        previewEl.innerHTML = '<span style="color: #64748b; font-style: italic;">Start typing to see preview...</span>';
+        return;
+      }
+
+      // Sample replacement values
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 7);
+
+      const preview = body
+        .replace(/\{\{name\}\}/gi, 'John Doe')
+        .replace(/\{\{phone\}\}/gi, '919876543210')
+        .replace(/\{\{dueDate\}\}/gi, dueDate.toLocaleDateString('en-IN'));
+
+      // Escape HTML and preserve newlines
+      previewEl.textContent = preview;
+    }
+
+    // Initialize preview on page load if editing
+    document.addEventListener('DOMContentLoaded', () => {
+      const body = document.getElementById('body');
+      if (body && body.value.trim()) {
+        updatePreview();
+      }
+    });
+  </script>
+
+</body>
+</html>

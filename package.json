@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "predev": "powershell -ExecutionPolicy Bypass -File scripts/cleanup.ps1",
+    "dev": "concurrently -n APP,WHATSAPP -c cyan,green \"npm run app\" \"npm run whatsapp\"",
+    "app": "nodemon index.js",
+    "whatsapp": "cd whatsapp-service && go run main.go"
+  },
+  "keywords": [],
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.10.0"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.4"
+  }
+}
