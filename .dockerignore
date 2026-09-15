@@ -1,0 +1,9 @@
+node_modules/
+whatsapp-service/*.exe
+whatsapp-service/*.dll
+whatsapp-service/whatsapp.db
+whatsapp-service/whatsapp.db-shm
+whatsapp-service/whatsapp.db-wal
+whatsapp-service/whatsapp/
+.env
+.env.*
