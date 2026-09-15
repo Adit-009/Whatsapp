@@ -21,13 +21,14 @@ import (
 )
 
 type WhatsAppService struct {
-	client        *whatsmeow.Client
-	container     *sqlstore.Container
-	qrCodeBase64  string
-	qrChan        <-chan whatsmeow.QRChannelItem
-	mu            sync.RWMutex
-	eventHandlers []func(event IncomingMessageEvent)
-	lastQRRestart time.Time
+	client           *whatsmeow.Client
+	container        *sqlstore.Container
+	qrCodeBase64     string
+	qrChan           <-chan whatsmeow.QRChannelItem
+	mu               sync.RWMutex
+	eventHandlers    []func(event IncomingMessageEvent)
+	lastQRRestart    time.Time
+	logoutInProgress bool
 }
 
 type IncomingMessageEvent struct {
@@ -231,8 +232,8 @@ func (s *WhatsAppService) RestartQR() {
 		s.mu.Unlock()
 		return
 	}
-	// Prevent rapid restarts — minimum 10 seconds between attempts
-	if time.Since(s.lastQRRestart) < 10*time.Second {
+	// Prevent rapid restarts — minimum 3 seconds between attempts
+	if time.Since(s.lastQRRestart) < 3*time.Second {
 		s.mu.Unlock()
 		return
 	}
@@ -282,9 +283,17 @@ func (s *WhatsAppService) eventHandler(rawEvt interface{}) {
 		log.Println("[WhatsMeow] ✅ Client connected to WhatsApp servers.")
 
 	case *events.LoggedOut:
-		log.Println("[WhatsMeow] ⚠️ Client logged out. Clearing session and preparing new QR...")
-		// Delete the stale device and start fresh QR flow automatically
-		go s.clearSessionAndStartQR()
+		log.Println("[WhatsMeow] ⚠️ Client logged out event received.")
+		// Only start QR flow from here if Logout() didn't already handle it
+		s.mu.RLock()
+		logoutHandled := s.logoutInProgress
+		s.mu.RUnlock()
+		if !logoutHandled {
+			log.Println("[WhatsMeow] Starting fresh QR flow from LoggedOut event...")
+			go s.clearSessionAndStartQR()
+		} else {
+			log.Println("[WhatsMeow] Logout already in progress, skipping duplicate QR flow.")
+		}
 
 	case *events.StreamReplaced:
 		log.Println("[WhatsMeow] ⚠️ Stream replaced (another login detected). Will auto-reconnect...")
@@ -373,24 +382,39 @@ func (s *WhatsAppService) SendMessage(phone, message string) (string, error) {
 	return resp.ID, nil
 }
 
-// Logout deletes stored session and logs out client
+// Logout deletes stored session and logs out client, then immediately starts fresh QR flow
 func (s *WhatsAppService) Logout() error {
 	s.mu.Lock()
-	defer s.mu.Unlock()
 
 	if s.client == nil {
+		s.mu.Unlock()
 		return errors.New("client not initialized")
 	}
+
+	// Mark logout in progress so the LoggedOut event handler doesn't duplicate the QR flow
+	s.logoutInProgress = true
 
 	if s.client.IsLoggedIn() {
 		err := s.client.Logout(context.Background())
 		if err != nil {
+			s.logoutInProgress = false
+			s.mu.Unlock()
 			return fmt.Errorf("failed to logout: %w", err)
 		}
 	}
 
 	s.qrCodeBase64 = ""
-	log.Println("[WhatsMeow] Successfully logged out of WhatsApp session.")
+	s.mu.Unlock()
+
+	log.Println("[WhatsMeow] Successfully logged out. Starting fresh QR flow immediately...")
+
+	// Immediately start a new QR flow instead of waiting for the LoggedOut event
+	s.clearSessionAndStartQR()
+
+	s.mu.Lock()
+	s.logoutInProgress = false
+	s.mu.Unlock()
+
 	return nil
 }
 

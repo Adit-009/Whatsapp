@@ -120,9 +120,27 @@ func handleQR(w http.ResponseWriter, r *http.Request) {
 
 	qr := waService.GetQRCode()
 
-	// If no QR available, trigger a fresh QR flow
+	// If no QR available, trigger a fresh QR flow and wait briefly for it
 	if qr == "" {
 		waService.RestartQR()
+
+		// Wait up to 5 seconds for QR to become available (poll every 500ms)
+		for i := 0; i < 10; i++ {
+			time.Sleep(500 * time.Millisecond)
+			qr = waService.GetQRCode()
+			if qr != "" {
+				break
+			}
+			// Also break if connected during wait
+			if waService.IsConnected() {
+				json.NewEncoder(w).Encode(map[string]interface{}{
+					"connected": true,
+					"qr":        "",
+					"message":   "Connected to WhatsApp.",
+				})
+				return
+			}
+		}
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{

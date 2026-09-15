@@ -58,7 +58,7 @@ class WhatsAppService {
    */
   async getQRCode() {
     try {
-      const response = await fetch(`${this.baseUrl}/qr`, { signal: AbortSignal.timeout(5000) });
+      const response = await fetch(`${this.baseUrl}/qr`, { signal: AbortSignal.timeout(10000) });
       if (!response.ok) {
         return { connected: false, qr: '', serviceOnline: true };
       }
